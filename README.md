@@ -1,99 +1,50 @@
-Импортируем нужные библиотеки.
+# Task
+Our task was to predict people's spendings in the next week in 6 different categories(binary classification) based on their previous transaction history
 
+# Results
 
-```python
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-```
+Public leaderboard - 3rd place
 
-Загружаем данные из файла
+Private leaderboard - 20th place
 
+# Features
 
-```python
-transactions_train = pd.read_csv('transactions_train.csv')
-```
+Let's see on the different category spendings for a whole period to demonstrate some hidden correlations between dates and boughts.
 
-Группируем данные таким образом, чтобы получить количество покупок каждой категории за каждый день
+For example, Category 37 - Flowers. Peaks in life are 14th February - Valentine's Day, 8th March - Women's Day, 1st September - First Day of School. 
 
-
-```python
-group_sum_for_each_day = transactions_train.groupby(['trans_date','small_group'])['amount'].sum()
-group_count_for_each_day = transactions_train.groupby(['trans_date','small_group'])['amount'].count()
-```
-
-
-```python
-category_sums = group_sum_for_each_day.reset_index().pivot(index='trans_date', \
-                                                      columns='small_group',values='amount').fillna(0)
-category_counts = group_count_for_each_day.reset_index().pivot(index='trans_date', \
-                                                      columns='small_group',values='amount').fillna(0)
-```
-
-
-```python
-category_counts.columns = ['small_group_' + str(i) for i in category_counts.columns]
-category_sums.columns = ['small_group_' + str(i) for i in category_sums.columns]
-```
-
-Можно посмотреть на разные категории и увидеть корреляции между бытовыми датами и покупками в этот период
-
-Например, Категория 37 - Цветы и флористика, пики покупок выпадают на 14 февраля, 8 марта и 1 сентября, так можно получить примерные даты транзакций 
-
+Thus, we can definetely decode the dates of the dataset. 
 
 ```python
 plt.plot(category_counts['small_group_37']);
 ```
 
-
+<img src="https://github.com/trmasha2002/nti_final_AI/blob/master/charts/flowers.png?raw=true" 
+     width="40%"></img>
     
-![png](output_9_0.png)
-    
+But what about the year? Peak of spended money for matches(Category 81 - Sports matchs tickets, sports clubs and fitness) is the end of the summer. 
 
-
-Пик потраченных денег на билеты на матчи (Категория 81 - Билеты на спортивные матчи, спортивные клубы и фитнес-центры) выпали на начало лета скорее всего перед ЧМ
-
+Likely, it is the World Championship 2018 in Russia.
 
 ```python
 plt.plot(category_sums['small_group_81']);
 ```
 
+<img src="https://github.com/trmasha2002/nti_final_AI/blob/master/charts/sports.png?raw=true" 
+     width="40%"></img>
 
-    
-![png](output_11_0.png)
-    
-
-
-А вот количество было наибольшим в конце августа
-
-
-```python
-plt.plot(category_counts['small_group_81']);
-```
-
-
-    
-![png](output_13_0.png)
-    
-
-
-Пик алкоголя(Категория 18 - Алкогольный магазин) был перед Новым Годом
-
+By the way, alcohol peak(Category 18 - Alcohol markets) was near The New Year.
 
 ```python
 plt.plot(category_sums['small_group_18']);
 ```
 
-
-    
-![png](output_15_0.png)
-    
+<img src="https://github.com/trmasha2002/nti_final_AI/blob/master/charts/alcohol.png?raw=true" 
+     width="40%"></img>
 
 
-Были выдвинуты гипотезы связанные с романтичностью людей и их интересом к матчам:
+Thus, main hypothesis were related on the assumption that people who buy in this periods(near 8 March and near the championship) could be clustered automatically to different groups:
 
-1) Если они покупали цветы на 8е марта - скорее всего они чаще ходят в кино и театры
+1. If they buy flowers, likely that they are romantic and more often go to cinemas and theatres.
 
-2) Если они ходили на самый популярный матч - скорее всего они чаще ходят на матчи вообще
-
-3) И возможно есть скрытые корреляции, например, если они покупали определенные виды товаров в эти периоды, значит интереса к каким-то группам у них меньше или больше
+2. If they went to the most popular match, likely they are into sports and more often go to all matches.
